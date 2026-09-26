@@ -1,8 +1,10 @@
 name: Build APK
 
+# Builds and publishes the APK when something lands on main (e.g. a merged PR).
+# It can also be run by hand from the Actions tab.
 on:
   push:
-    branches: [main, 'claude/**']
+    branches: [main]
   workflow_dispatch:
 
 permissions:
