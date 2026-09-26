@@ -1,138 +1,189 @@
+<div align="center">
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/logo-dark.svg">
+  <img src="docs/logo-light.svg" width="88" height="88" alt="Folio logo">
+</picture>
+
 # Folio
 
-A quiet Gmail reader for newsletters. It does three things:
+**A quiet Gmail reader for newsletters.**<br>
+No toolbars, no clipped messages, no inbox clutter: just the words.
 
-1. **Inbox**: everything in your Gmail inbox, newest first, each with a small sender
-   icon. Read/unread isn't tracked. The inbox and every message in it are cached
-   on the phone and prefetched in the background, so opening an email is instant
-   and there are no loading spinners once it's synced.
-2. **Reader**: tap a message to open it full screen with no toolbars. Long emails are
-   never clipped. Gmail cuts messages off at ~102 KB, but Folio fetches the whole
-   body from the Gmail API and reflows it into a clean reading column (Mozilla
-   Readability, the engine behind Firefox Reader View). Emails that don't suit reader
-   mode, such as link round-ups or heavily designed promos, show their original
-   layout scaled to fit your screen, recoloured for dark mode. The header shows the
-   date, an estimated reading time and a link to switch views.
-3. **Archive**: scroll to the end, tap the archive button, and you're back in the
-   inbox. An *Undo* toast appears briefly in case you tapped it by mistake.
+[![Build APK](https://github.com/bpiggin/folio/actions/workflows/build-apk.yml/badge.svg)](https://github.com/bpiggin/folio/actions/workflows/build-apk.yml)
+[![Latest build](https://img.shields.io/github/v/release/bpiggin/folio?label=latest%20apk&color=111111)](https://github.com/bpiggin/folio/releases/latest)
+![Platform: Android](https://img.shields.io/badge/platform-android-111111)
+[![License: MIT](https://img.shields.io/badge/license-MIT-111111)](LICENSE)
 
-Links open in your browser. The design is monochrome and uses the phone's own
-sans-serif (like Substack), and light and dark mode follow the system setting.
+<br>
 
-Built with Expo (React Native), Expo Router, `react-native-webview` and native
-Google Sign-In. There's no server: the app talks to the Gmail API directly from
-your phone.
+<img src="docs/reader-light.png" width="250" alt="An essay open in Folio's reader, light mode">&nbsp;&nbsp;
+<img src="docs/archive-dark.png" width="250" alt="The end of an essay in dark mode, with the archive button">&nbsp;&nbsp;
+<img src="docs/original-dark.png" width="250" alt="A designed newsletter shown in its original layout, recoloured for dark mode">
+
+</div>
 
 ---
 
-## Install on your Android phone
+Gmail is built for triage: replying, labelling, forwarding and moving on. It's a poor
+place to read a 4,000-word essay. Long newsletters get cut off with *"[Message clipped]
+View entire message"*, and the full version opens in a cramped web view. Toolbars take
+up the top and bottom of the screen the whole time you're reading.
 
-You need to do two one-time setup steps: (A) a Google Cloud project so the app is
-allowed to read your Gmail, and (B) a GitHub build that produces the APK.
+Folio does three things.
 
-### A. Google Cloud setup (≈10 minutes, one time)
+1. **Shows your inbox**, newest first. It doesn't track read or unread.
+2. **Opens messages full screen**, with nothing but the text.
+3. **Archives** a message from the end of it and takes you back to the inbox.
 
-1. Go to <https://console.cloud.google.com/> and **create a project** (e.g. "Folio").
-2. **Enable the Gmail API**: *APIs & Services → Library*, search "Gmail API",
-   then click **Enable**.
-3. **Configure the consent screen**: *Google Auth Platform* (formerly *OAuth consent
-   screen*) → **Get started**.
-   - App name `Folio`, with your email as the support and contact email.
-   - Audience: **External**.
-4. **Add yourself as a user**: *Audience → Test users → Add users*, then enter your
-   Gmail address.
-5. **Create the Android client**: *Clients → Create client*.
-   - Application type: **Android**
-   - Package name: `com.bpiggin.folio`
-   - SHA-1 certificate fingerprint:
+## Features
+
+- **Never clipped.** Folio fetches the complete message from the Gmail API, however
+  long it is. Gmail's ~102 KB cut-off doesn't apply.
+- **Reader view.** Newsletters are reflowed into a single, comfortable column by
+  [Mozilla Readability](https://github.com/mozilla/readability), the engine behind
+  Firefox Reader View. It uses your phone's own sans-serif, as Substack does.
+- **Original layout when it's better.** Link round-ups and heavily designed emails
+  keep their own layout, scaled to fit your screen. One tap switches between the two views.
+- **Proper dark mode.** Reader view follows the system theme. Original layouts are
+  recoloured for dark mode: light backgrounds turn dark and dark text turns light,
+  while brand colours and images stay intact.
+- **Instant.** The inbox and every message in it are cached on your phone and
+  downloaded in the background, so opening an email doesn't show a spinner.
+- **Reading time.** Each message shows an estimate at the top.
+- **Archive at the end.** Scroll to the bottom and tap the archive button. An
+  *Undo* option appears briefly afterwards.
+- **Small, monochrome and calm.** Screens fade in and out quickly. Each sender gets a
+  small inline icon, and the whole app is black and white.
+
+## Getting Folio on your phone
+
+Folio isn't on the Play Store. You build your own copy on GitHub's servers, for free
+and without installing Android Studio, then install the APK directly.
+
+> **Why not just download the APK from this repo?** A Gmail app needs a Google
+> Cloud project to sign in, and Google only lets a personal (unverified) project be
+> used by accounts it lists as users. The builds on this repo's Releases page sign
+> in through the maintainer's project, so they won't work for your account. Setting
+> up your own takes about 15 minutes, and after that you own the whole thing.
+
+### 1. Fork this repository
+
+Click **Fork** at the top of this page. In your fork, open the **Actions** tab and
+enable workflows. GitHub turns them off for new forks.
+
+Then choose an Android package name that's unique to you, such as `com.yourname.folio`.
+Add it under **Settings → Secrets and variables → Actions → Variables** as
+`ANDROID_PACKAGE`.
+
+### 2. Create a Google Cloud project
+
+1. Go to the [Google Cloud console](https://console.cloud.google.com/) and **create a
+   project**.
+2. Under **APIs & Services → Library**, find the **Gmail API** and click **Enable**.
+3. Open **Google Auth Platform** and click **Get started**. Name the app, give your
+   email address as the contact, and choose **External** as the audience.
+4. Under **Audience → Test users**, add your Gmail address.
+5. Under **Clients → Create client**, choose **Android**:
+   - **Package name:** the `ANDROID_PACKAGE` value you chose in step 1
+   - **SHA-1 certificate fingerprint:**
      ```
      5E:8F:16:06:2E:A3:CD:2C:4A:0D:54:78:76:BA:A6:F3:8C:AB:F6:25
      ```
-     This is the fingerprint of the key the GitHub build signs the APK with (see
-     *Using your own signing key* below if you want a private one).
+     This is the default signing key the build uses. Each build also prints the
+     fingerprint in its log. See [Signing with your own key](#signing-with-your-own-key).
 
-   You don't need a client ID in the code. Google matches the app by its
-   package name and signature.
+You don't need to add any client ID or secret to the code. Google recognises the app
+from its package name and signature.
 
-> **Avoiding weekly sign-outs.** While the app's publishing status is *Testing*,
-> Google expires your sign-in after 7 days. To stop that, go to *Audience* and
-> click **Publish app**. You don't need to submit it for verification for personal
-> use. When you connect, Google shows a "Google hasn't verified this app" screen;
-> tap **Advanced → Go to Folio (unsafe)** to continue. It's your own app, so
-> this is expected.
+> [!TIP]
+> While the project is in **Testing**, Google signs you out every 7 days. To stop
+> this, go to **Audience** and click **Publish app**. For personal use you don't need
+> to submit it for verification. When you connect, Google shows a *"Google hasn't
+> verified this app"* screen. Tap **Advanced → Go to Folio** to continue: it's your
+> own project.
 
-### B. Build the APK (automatic)
+### 3. Build and install
 
-The workflow in `.github/workflows/build-apk.yml` builds the APK on GitHub's
-servers, so you don't need Android Studio.
-
-- Every push to `main` builds the APK and publishes it as a **GitHub Release**.
-- Pushes to other branches (and manual runs from the *Actions* tab) build it as a
-  downloadable workflow artifact.
-
-To install:
-
-1. On your phone, open `https://github.com/bpiggin/folio/releases/latest`.
-2. Tap **folio.apk** to download it, then open it. Android will ask you to allow
-   installs from your browser the first time.
+1. In your fork, go to **Actions → Build APK → Run workflow**. The build takes about
+   12 minutes. Every later push to `main` also builds and publishes a new APK.
+2. On your phone, open your fork's **Releases** page and tap **folio.apk**. Android
+   asks you to allow installs from your browser the first time.
 3. Open Folio and tap **Connect Gmail**.
 
-To update, install a newer `folio.apk` over the old one. Your sign-in is kept.
+To update, install a newer `folio.apk` over the old one. Your sign-in and cache are kept.
 
-### Using your own signing key (optional)
+### Signing with your own key
 
-By default the APK is signed with React Native's standard debug key, which is the
-same key for every React Native project. That's fine for a personal sideloaded app,
-since Google still asks *you* to sign in and consent. If you'd rather use a
-private key:
+By default the APK is signed with React Native's standard debug key. That's fine for
+personal use, because Google still asks *you* to sign in and consent. Since that key is
+public, you may prefer your own:
 
 ```sh
 keytool -genkeypair -v -keystore folio.keystore -alias androiddebugkey \
   -storepass android -keypass android -keyalg RSA -keysize 2048 -validity 10000 \
   -dname "CN=Folio"
-base64 -w0 folio.keystore   # macOS: base64 -i folio.keystore
+base64 -w0 folio.keystore          # macOS: base64 -i folio.keystore
 keytool -list -v -keystore folio.keystore -storepass android | grep SHA1
 ```
 
-1. Add the base64 output as a repository secret named `ANDROID_KEYSTORE_BASE64`
-   (*Settings → Secrets and variables → Actions*).
-2. Replace the SHA-1 on your Google Cloud Android client with the new one.
-3. Uninstall the old APK before installing the new one. Android won't update an
-   app across signing keys.
+Save the base64 output as the repository **secret** `ANDROID_KEYSTORE_BASE64`. Then
+put the new SHA-1 on your Google Cloud Android client. Uninstall the old APK once
+before installing: Android won't update an app that has changed signing keys.
 
----
+## Privacy
+
+- **There's no server.** Folio talks directly from your phone to the Gmail API. It
+  has no analytics or tracking, and nothing is sent to the maintainer.
+- **Sign-in is handled by Google Play services.** Folio never sees your password.
+- **Minimal scope.** Folio requests `gmail.modify`, the narrowest scope that allows
+  archiving (removing the `INBOX` label). It can't permanently delete mail.
+- **Mail is cached in the app's private storage.** Signing out deletes it.
+- **Sender icons come from Google's favicon service.** Folio sends it the sender's
+  domain, not your email address.
+- **Images in emails load from the sender's servers,** as in any email client. Folio
+  strips 1×1 tracking pixels, but senders may still see that a message was opened.
 
 ## Development
 
 ```sh
 npm install
-npx expo run:android     # needs Android Studio / an Android SDK, or a USB-connected phone
+npx expo run:android        # needs an Android SDK or a USB-connected phone
 npm run typecheck
 npm run lint
 ```
 
-Google Sign-In is a native module, so the app doesn't run in Expo Go. Use
-`expo run:android`, which builds a development build. For local debug builds,
-register the SHA-1 of `android/app/debug.keystore` in Google Cloud. It's the same
-standard key as above unless you've changed it.
-
-### Project layout
+Folio is built with [Expo](https://expo.dev) (React Native), Expo Router,
+`react-native-webview` and native Google Sign-In. Google Sign-In is a native module,
+so the app doesn't run in Expo Go: use `expo run:android`. For local debug builds,
+register the SHA-1 of `android/app/debug.keystore` on your Google Cloud client. It's
+the same standard key unless you've replaced it.
 
 ```
-src/app/_layout.tsx          theme, navigation stack (fade transitions)
-src/app/index.tsx            inbox (or the connect screen when signed out)
-src/app/message/[id].tsx     full-screen reader
-src/components/SignIn.tsx    connect screen
-src/lib/auth.ts              Google Sign-In + access tokens (scope: gmail.modify)
-src/lib/gmail.ts             Gmail REST calls: list inbox, fetch full message, archive
-src/lib/cache.ts             on-disk inbox + message cache, background prefetch
-src/lib/store.tsx            inbox state, paging, optimistic archive + undo
-src/reader/template.ts       the reader page rendered in the WebView
-scripts/gen-reader-assets.js bundles Readability + Phosphor icons into src/reader/
+src/app/_layout.tsx           theme and navigation (fade transitions)
+src/app/index.tsx             inbox, or the connect screen when signed out
+src/app/message/[id].tsx      full-screen reader
+src/lib/auth.ts               Google Sign-In and access tokens
+src/lib/gmail.ts              Gmail REST calls: list, fetch full message, archive
+src/lib/cache.ts              on-disk inbox and message cache, background prefetch
+src/lib/store.tsx             inbox state, paging, optimistic archive and undo
+src/reader/template.ts        the reader page rendered inside the WebView
+scripts/gen-reader-assets.js  bundles Readability and icons into src/reader/
+.github/workflows/            builds the APK and publishes releases
 ```
 
-### Permissions
+## Contributing
 
-Folio requests `https://www.googleapis.com/auth/gmail.modify`, the narrowest
-Gmail scope that allows archiving (removing the `INBOX` label). It can't
-permanently delete mail.
+Issues and pull requests are welcome. Folio deliberately does very little, so please
+open an issue to discuss a new feature before building it. Run `npm run typecheck` and
+`npm run lint` before opening a PR.
+
+## Acknowledgements
+
+- [Mozilla Readability](https://github.com/mozilla/readability) (Apache-2.0) turns
+  newsletters into clean articles.
+- [Phosphor Icons](https://phosphoricons.com) (MIT) provides the icons and the app logo.
+
+## License
+
+[MIT](LICENSE)

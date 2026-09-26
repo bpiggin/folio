@@ -42,6 +42,9 @@ jobs:
           npx eslint .
 
       - name: Generate native Android project
+        env:
+          # Optional repo variable for forks; defaults to the package in app.json.
+          FOLIO_ANDROID_PACKAGE: ${{ vars.ANDROID_PACKAGE }}
         run: npx expo prebuild --platform android --no-install
 
       # Optional: sign with your own key instead of the shared React Native debug key.

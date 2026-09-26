@@ -1,3 +1,4 @@
+import Constants from 'expo-constants';
 import { GoogleSignin, isErrorWithCode, statusCodes } from '@react-native-google-signin/google-signin';
 
 // gmail.modify lets us read messages and remove the INBOX label (archive).
@@ -44,7 +45,9 @@ export async function signIn(): Promise<Account | null> {
     // this app's package name + signing certificate.
     if (e instanceof Error && /DEVELOPER_ERROR|\b10\b/.test(`${(e as { code?: string }).code} ${e.message}`)) {
       throw new Error(
-        'Google did not recognise this app. Check the Android OAuth client in Google Cloud uses package com.bpiggin.folio and the SHA-1 from the README.'
+        `Google did not recognise this app. Check your Android OAuth client in Google Cloud uses package ${
+          Constants.expoConfig?.android?.package ?? 'com.bpiggin.folio'
+        } and this build's SHA-1 (see the README).`
       );
     }
     throw e;

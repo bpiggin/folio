@@ -38,5 +38,7 @@
     "lint": "expo lint",
     "gen:reader-assets": "node scripts/gen-reader-assets.js"
   },
-  "private": true
+  "private": true,
+  "license": "MIT",
+  "description": "A quiet Gmail reader for newsletters on Android."
 }
