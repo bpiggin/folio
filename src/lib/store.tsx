@@ -1,10 +1,13 @@
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { AppState } from 'react-native';
 
 import * as auth from './auth';
+import * as cache from './cache';
 import * as gmail from './gmail';
 import type { MessageSummary } from './gmail';
 
-type Status = 'idle' | 'loading' | 'refreshing' | 'loadingMore';
+/** `syncing` is a silent background refresh over the cached inbox. */
+type Status = 'idle' | 'loading' | 'refreshing' | 'syncing' | 'loadingMore';
 
 type Store = {
   /** undefined while restoring the session on launch. */
@@ -52,14 +55,17 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const load = useCallback(
-    async (mode: 'loading' | 'refreshing') => {
+    async (mode: 'loading' | 'refreshing' | 'syncing') => {
       setStatus(mode);
       setError(null);
       try {
         const page = await gmail.listInbox();
         pageToken.current = page.nextPageToken;
         setHasMore(!!page.nextPageToken);
-        setMessages(page.messages.filter((m) => !archived.current.has(m.id)));
+        const fresh = page.messages.filter((m) => !archived.current.has(m.id));
+        setMessages(fresh);
+        cache.prune(new Set(fresh.map((m) => m.id)));
+        cache.prefetch(fresh.map((m) => m.id));
       } catch (e) {
         handleError(e);
       } finally {
@@ -72,7 +78,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const start = useCallback(
     (acct: auth.Account | null) => {
       setAccount(acct);
-      if (acct) load('loading');
+      if (!acct) return;
+      // Show the last known inbox immediately, then refresh it quietly.
+      const snap = cache.readInbox(acct.email);
+      if (snap) {
+        setMessages(snap.messages);
+        pageToken.current = snap.nextPageToken;
+        setHasMore(!!snap.nextPageToken);
+        cache.prefetch(snap.messages.map((m) => m.id));
+      }
+      load(snap ? 'syncing' : 'loading');
     },
     [load]
   );
@@ -80,6 +95,24 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     auth.restoreSession().then(start);
   }, [start]);
+
+  // Keep the on-disk inbox in step with what's on screen.
+  useEffect(() => {
+    if (account) cache.writeInbox({ account: account.email, messages, nextPageToken: pageToken.current });
+  }, [account, messages]);
+
+  // Pick up new mail whenever the app comes back to the foreground.
+  const statusRef = useRef(status);
+  useEffect(() => {
+    statusRef.current = status;
+  }, [status]);
+  useEffect(() => {
+    if (!account) return;
+    const sub = AppState.addEventListener('change', (next) => {
+      if (next === 'active' && statusRef.current === 'idle') load('syncing');
+    });
+    return () => sub.remove();
+  }, [account, load]);
 
   const loadMore = useCallback(async () => {
     if (status !== 'idle' || !pageToken.current) return;
@@ -92,6 +125,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         const seen = new Set(prev.map((m) => m.id));
         return [...prev, ...page.messages.filter((m) => !seen.has(m.id) && !archived.current.has(m.id))];
       });
+      cache.prefetch(page.messages.map((m) => m.id));
     } catch (e) {
       handleError(e);
     } finally {
@@ -143,6 +177,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       },
       signOut: async () => {
         await auth.signOut().catch(() => {});
+        cache.clearCache();
         setAccount(null);
         setMessages([]);
       },

@@ -6,10 +6,12 @@ import { ActivityIndicator, Animated, Linking, Pressable, StyleSheet, Text, View
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
 
+import { FADE_MS } from '../../components/FadeIn';
+import { loadMessage } from '../../lib/cache';
 import { longDate } from '../../lib/format';
-import { FullMessage, getMessage } from '../../lib/gmail';
+import type { FullMessage } from '../../lib/gmail';
 import { useStore } from '../../lib/store';
-import { fonts, useTheme } from '../../lib/theme';
+import { useTheme, weight } from '../../lib/theme';
 import { buildReaderHtml, ReaderMessage } from '../../reader/template';
 
 export default function Reader() {
@@ -17,15 +19,22 @@ export default function Reader() {
   const store = useStore();
   const theme = useTheme();
   const insets = useSafeAreaInsets();
-  const summary = store.find(id);
   const [message, setMessage] = useState<FullMessage | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
   const [opacity] = useState(() => new Animated.Value(0));
+  // Messages are usually prefetched, so the page just fades in. Only show a
+  // spinner if we've genuinely been waiting (not cached and on a slow network).
+  const [slow, setSlow] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setSlow(true), 700);
+    return () => clearTimeout(t);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
-    getMessage(id)
+    loadMessage(id)
       .then((m) => !cancelled && setMessage(m))
       .catch((e) => !cancelled && setError(e instanceof Error ? e.message : String(e)));
     return () => {
@@ -61,7 +70,7 @@ export default function Reader() {
       return;
     }
     if (msg.type === 'ready') {
-      Animated.timing(opacity, { toValue: 1, duration: 220, useNativeDriver: true }).start();
+      Animated.timing(opacity, { toValue: 1, duration: FADE_MS, useNativeDriver: true }).start();
     } else if (msg.type === 'archive') {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       store.archive(id);
@@ -77,6 +86,7 @@ export default function Reader() {
     <View style={[styles.screen, { backgroundColor: theme.bg }]}>
       <StatusBar hidden animated />
       {html ? (
+        // Invisible until the page reports it has fully laid out, then fades in.
         <Animated.View style={[styles.fill, { opacity }]}>
           <WebView
             source={{ html, baseUrl: '' }}
@@ -101,12 +111,6 @@ export default function Reader() {
         </Animated.View>
       ) : (
         <View style={[styles.loading, { paddingTop: insets.top + 36 }]}>
-          {summary ? (
-            <>
-              <Text style={[styles.sender, { color: theme.accent }]}>{summary.from}</Text>
-              <Text style={[styles.subject, { color: theme.text }]}>{summary.subject}</Text>
-            </>
-          ) : null}
           {error ? (
             <Pressable
               onPress={() => {
@@ -118,12 +122,12 @@ export default function Reader() {
               <Text style={[styles.errorText, { color: theme.muted }]}>
                 {error}
                 {'\n'}
-                <Text style={{ color: theme.accent }}>Tap to retry</Text>
+                <Text style={{ color: theme.text, textDecorationLine: 'underline' }}>Tap to retry</Text>
               </Text>
             </Pressable>
-          ) : (
+          ) : slow ? (
             <ActivityIndicator color={theme.faint} style={{ marginTop: 40 }} />
-          )}
+          ) : null}
         </View>
       )}
     </View>
@@ -134,14 +138,6 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
   fill: { flex: 1 },
   loading: { flex: 1, paddingHorizontal: 22 },
-  sender: {
-    fontFamily: fonts.sansBold,
-    fontSize: 13,
-    letterSpacing: 0.8,
-    textTransform: 'uppercase',
-    marginBottom: 12,
-  },
-  subject: { fontFamily: fonts.serifBold, fontSize: 31, lineHeight: 36, letterSpacing: -0.4 },
   errorBox: { marginTop: 40 },
-  errorText: { fontFamily: fonts.sans, fontSize: 15, lineHeight: 22 },
+  errorText: { fontWeight: weight.regular, fontSize: 15, lineHeight: 22 },
 });

@@ -13,13 +13,8 @@ export function shortDate(ms: number, now = new Date()): string {
   return d.getFullYear() === now.getFullYear() ? base : `${base} ${d.getFullYear()}`;
 }
 
-/** Reader byline date: "Monday 12 September 2026 · 14:05". */
+/** Reader byline date: "25 Sep 2026". */
 export function longDate(ms: number): string {
   const d = new Date(ms);
-  const day = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][d.getDay()];
-  const month = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December',
-  ][d.getMonth()];
-  return `${day} ${d.getDate()} ${month} ${d.getFullYear()} · ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
 }

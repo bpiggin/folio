@@ -1,12 +1,13 @@
 import { useColorScheme } from 'react-native';
 
-export const fonts = {
-  serif: 'Newsreader_500Medium',
-  serifBold: 'Newsreader_600SemiBold',
-  sans: 'Inter_400Regular',
-  sansMedium: 'Inter_500Medium',
-  sansBold: 'Inter_600SemiBold',
-};
+/**
+ * The system sans-serif everywhere (Roboto on most Android phones), like
+ * Substack's `system-ui` stack. Nothing to load, so text never swaps fonts.
+ */
+export const weight = {
+  regular: '400',
+  bold: '700',
+} as const;
 
 export type Theme = {
   scheme: 'light' | 'dark';
@@ -16,32 +17,27 @@ export type Theme = {
   muted: string;
   faint: string;
   hairline: string;
-  accent: string;
-  onAccent: string;
 };
 
+// Strictly monochrome: no accent colour, emphasis comes from weight and contrast.
 const light: Theme = {
   scheme: 'light',
-  bg: '#FBFAF7',
-  surface: '#F3F1EC',
-  text: '#1B1A18',
-  muted: '#77726A',
-  faint: '#A8A399',
-  hairline: '#E7E3DB',
-  accent: '#B4532A',
-  onAccent: '#FFFFFF',
+  bg: '#FFFFFF',
+  surface: '#F4F4F4',
+  text: '#111111',
+  muted: '#6B6B6B',
+  faint: '#A6A6A6',
+  hairline: '#EBEBEB',
 };
 
 const dark: Theme = {
   scheme: 'dark',
-  bg: '#131312',
-  surface: '#1E1D1B',
-  text: '#ECE9E3',
-  muted: '#9A958C',
-  faint: '#6A665F',
-  hairline: '#2A2927',
-  accent: '#E08A5E',
-  onAccent: '#131312',
+  bg: '#111111',
+  surface: '#1C1C1C',
+  text: '#EDEDED',
+  muted: '#9A9A9A',
+  faint: '#5F5F5F',
+  hairline: '#262626',
 };
 
 export function useTheme(): Theme {
