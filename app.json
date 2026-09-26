@@ -7,7 +7,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "backgroundColor": "#FBFAF7",
+    "backgroundColor": "#FFFFFF",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.bpiggin.folio"
@@ -15,7 +15,6 @@
     "android": {
       "package": "com.bpiggin.folio",
       "adaptiveIcon": {
-        "backgroundColor": "#FBFAF7",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -27,16 +26,15 @@
     },
     "plugins": [
       "expo-router",
-      "expo-font",
       [
         "expo-splash-screen",
         {
           "image": "./assets/splash-icon.png",
-          "imageWidth": 120,
-          "backgroundColor": "#FBFAF7",
+          "imageWidth": 96,
+          "backgroundColor": "#FFFFFF",
           "dark": {
-            "image": "./assets/splash-icon.png",
-            "backgroundColor": "#131312"
+            "image": "./assets/splash-icon-dark.png",
+            "backgroundColor": "#111111"
           }
         }
       ],
@@ -44,10 +42,13 @@
         "expo-build-properties",
         {
           "android": {
-            "buildArchs": ["arm64-v8a"]
+            "buildArchs": [
+              "arm64-v8a"
+            ]
           }
         }
-      ]
+      ],
+      "expo-image"
     ],
     "experiments": {
       "typedRoutes": true

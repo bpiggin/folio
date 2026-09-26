@@ -2,17 +2,22 @@
 
 A quiet Gmail reader for newsletters. It does three things:
 
-1. **Inbox**: everything in your Gmail inbox, newest first. Read/unread isn't tracked.
+1. **Inbox**: everything in your Gmail inbox, newest first, each with a small sender
+   icon. Read/unread isn't tracked. The inbox and every message in it are cached
+   on the phone and prefetched in the background, so opening an email is instant
+   and there are no loading spinners once it's synced.
 2. **Reader**: tap a message to open it full screen with no toolbars. Long emails are
    never clipped. Gmail cuts messages off at ~102 KB, but Folio fetches the whole
    body from the Gmail API and reflows it into a clean reading column (Mozilla
    Readability, the engine behind Firefox Reader View). Emails that don't suit reader
    mode, such as link round-ups or heavily designed promos, show their original
-   layout scaled to fit your screen. A link at the bottom switches between the two views.
+   layout scaled to fit your screen, recoloured for dark mode. The header shows the
+   date, an estimated reading time and a link to switch views.
 3. **Archive**: scroll to the end, tap the archive button, and you're back in the
    inbox. An *Undo* toast appears briefly in case you tapped it by mistake.
 
-Links open in your browser. Light and dark mode follow the system setting.
+Links open in your browser. The design is monochrome and uses the phone's own
+sans-serif (like Substack), and light and dark mode follow the system setting.
 
 Built with Expo (React Native), Expo Router, `react-native-webview` and native
 Google Sign-In. There's no server: the app talks to the Gmail API directly from
@@ -114,15 +119,16 @@ standard key as above unless you've changed it.
 ### Project layout
 
 ```
-src/app/_layout.tsx          fonts, theme, navigation stack
+src/app/_layout.tsx          theme, navigation stack (fade transitions)
 src/app/index.tsx            inbox (or the connect screen when signed out)
 src/app/message/[id].tsx     full-screen reader
 src/components/SignIn.tsx    connect screen
 src/lib/auth.ts              Google Sign-In + access tokens (scope: gmail.modify)
 src/lib/gmail.ts             Gmail REST calls: list inbox, fetch full message, archive
+src/lib/cache.ts             on-disk inbox + message cache, background prefetch
 src/lib/store.tsx            inbox state, paging, optimistic archive + undo
 src/reader/template.ts       the reader page rendered in the WebView
-scripts/gen-readability.js   bundles @mozilla/readability into src/reader/
+scripts/gen-reader-assets.js bundles Readability + Phosphor icons into src/reader/
 ```
 
 ### Permissions
