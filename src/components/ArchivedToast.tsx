@@ -32,11 +32,11 @@ export function ArchivedToast({
     if (visible) {
       check.setValue(0);
       Animated.parallel([
-        Animated.spring(shown, { toValue: 1, useNativeDriver: true, speed: 14, bounciness: 7 }),
-        Animated.spring(check, { toValue: 1, useNativeDriver: true, speed: 10, bounciness: 14, delay: 120 }),
+        Animated.spring(shown, { toValue: 1, useNativeDriver: true, speed: 24, bounciness: 6 }),
+        Animated.spring(check, { toValue: 1, useNativeDriver: true, speed: 18, bounciness: 12, delay: 60 }),
       ]).start();
     } else {
-      Animated.timing(shown, { toValue: 0, duration: reduceMotion ? 0 : 220, useNativeDriver: true }).start();
+      Animated.timing(shown, { toValue: 0, duration: reduceMotion ? 0 : 150, useNativeDriver: true }).start();
     }
   }, [archivedId, visible, shown, check, reduceMotion]);
 

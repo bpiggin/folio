@@ -90,17 +90,17 @@ h1.subject { font-weight: 700; font-size: 28px; line-height: 1.2; letter-spacing
   position: relative; width: 64px; height: 64px; border-radius: 50%; background: var(--text); color: var(--bg);
   display: grid; place-items: center; transition: transform .12s ease;
 }
-.archive .disc > span { grid-area: 1 / 1; display: grid; place-items: center; transition: opacity .2s ease, transform .34s cubic-bezier(.3, 1.5, .5, 1); }
+.archive .disc > span { grid-area: 1 / 1; display: grid; place-items: center; transition: opacity .12s ease, transform .22s cubic-bezier(.3, 1.5, .5, 1); }
 .archive .disc svg { width: 30px; height: 30px; }
 .archive .icon-check { opacity: 0; transform: scale(.4) rotate(-25deg); }
 .archive:active .disc { transform: scale(.92); }
 
 /* Archived: the disc pops, the box gives way to a check, and a soft ring ripples out. */
-.archive.done .disc { animation: pop .46s cubic-bezier(.3, 1.4, .5, 1); }
+.archive.done .disc { animation: pop .28s cubic-bezier(.3, 1.4, .5, 1); }
 .archive.done .icon-archive { opacity: 0; transform: scale(.6) translateY(-5px); }
-.archive.done .icon-check { opacity: 1; transform: none; transition-delay: .08s; }
+.archive.done .icon-check { opacity: 1; transform: none; transition-delay: .04s; }
 .archive .disc::after { content: ''; position: absolute; inset: 0; border-radius: 50%; border: 1.5px solid var(--text); opacity: 0; pointer-events: none; }
-.archive.done .disc::after { animation: ring .75s cubic-bezier(.2, .6, .3, 1); }
+.archive.done .disc::after { animation: ring .45s cubic-bezier(.2, .6, .3, 1); }
 @keyframes pop { 0% { transform: scale(.88); } 45% { transform: scale(1.08); } 100% { transform: scale(1); } }
 @keyframes ring { 0% { opacity: .45; transform: scale(1); } 100% { opacity: 0; transform: scale(2); } }
 
@@ -151,8 +151,8 @@ const ARCHIVE_JS = String.raw`
         '--dy:' + (-(0.28 + Math.random() * 0.45) * h).toFixed(0) + 'px;' +
         '--r:' + ((Math.random() - 0.5) * 200).toFixed(0) + 'deg;' +
         '--o:' + (0.35 + Math.random() * 0.55).toFixed(2) + ';' +
-        '--dur:' + (850 + Math.random() * 500).toFixed(0) + 'ms;' +
-        '--delay:' + (Math.random() * 240).toFixed(0) + 'ms';
+        '--dur:' + (520 + Math.random() * 300).toFixed(0) + 'ms;' +
+        '--delay:' + (Math.random() * 120).toFixed(0) + 'ms';
       layer.appendChild(el);
     }
     document.body.appendChild(layer);
@@ -164,7 +164,7 @@ const ARCHIVE_JS = String.raw`
     button.setAttribute('aria-label', 'Archived');
     post({ type: 'archiving' });
     if (!reduceMotion) sparkle();
-    setTimeout(function () { post({ type: 'archive' }); }, reduceMotion ? 250 : 700);
+    setTimeout(function () { post({ type: 'archive' }); }, reduceMotion ? 150 : 420);
   });
 })();
 `;

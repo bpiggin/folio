@@ -42,11 +42,11 @@ export function SwipeToArchive({
       if (next === gesture.armed) return;
       gesture.armed = next;
       Haptics.selectionAsync();
-      Animated.spring(armed, { toValue: next ? 1 : 0, useNativeDriver: true, speed: 28, bounciness: 8 }).start();
+      Animated.spring(armed, { toValue: next ? 1 : 0, useNativeDriver: true, speed: 40, bounciness: 8 }).start();
     };
     const settle = () => {
       arm(false);
-      Animated.spring(x, { toValue: 0, useNativeDriver: true, bounciness: 0, speed: 20 }).start();
+      Animated.spring(x, { toValue: 0, useNativeDriver: true, bounciness: 0, speed: 28 }).start();
     };
     return PanResponder.create({
       // Only claim clearly horizontal drags, so vertical scrolling and taps behave as normal.
@@ -63,14 +63,14 @@ export function SwipeToArchive({
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         // Dragging right reveals the left-hand icon, and vice versa.
         if (!reduceMotion) setBurst(g.dx > 0 ? 'left' : 'right');
-        Animated.timing(x, { toValue: Math.sign(g.dx) * width, duration: 160, useNativeDriver: true }).start(() => {
+        Animated.timing(x, { toValue: Math.sign(g.dx) * width, duration: 120, useNativeDriver: true }).start(() => {
           // Let the sparkles play for a moment before the row folds away.
           setTimeout(
             () => {
-              LayoutAnimation.configureNext(LayoutAnimation.create(200, 'easeInEaseOut', 'opacity'));
+              LayoutAnimation.configureNext(LayoutAnimation.create(150, 'easeInEaseOut', 'opacity'));
               onArchive();
             },
-            reduceMotion ? 0 : 260
+            reduceMotion ? 0 : 160
           );
         });
       },

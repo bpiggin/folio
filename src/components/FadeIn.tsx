@@ -2,7 +2,7 @@ import { useFocusEffect } from 'expo-router';
 import { ReactNode, useCallback, useState } from 'react';
 import { Animated, StyleProp, ViewStyle } from 'react-native';
 
-export const FADE_MS = 140;
+export const FADE_MS = 110;
 
 /**
  * Screens switch with native animation turned off and fade their own content

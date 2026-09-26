@@ -13,7 +13,7 @@ function makeParticles(count: number): Particle[] {
     size: i % 3 === 2 ? 3 + Math.random() * 2 : 7 + Math.random() * 6,
     spin: (Math.random() - 0.5) * 180,
     peak: 0.45 + Math.random() * 0.5,
-    delay: Math.random() * 90,
+    delay: Math.random() * 50,
     star: i % 3 !== 2,
   }));
 }
@@ -29,7 +29,7 @@ export function SparkleBurst({ color, count = 10 }: { color: string; count?: num
   useEffect(() => {
     Animated.parallel(
       progress.map((p, i) =>
-        Animated.timing(p, { toValue: 1, duration: 520, delay: particles[i].delay, useNativeDriver: true })
+        Animated.timing(p, { toValue: 1, duration: 360, delay: particles[i].delay, useNativeDriver: true })
       )
     ).start();
   }, [progress, particles]);
