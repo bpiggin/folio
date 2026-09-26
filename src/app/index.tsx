@@ -5,6 +5,7 @@ import { memo, useCallback, useEffect } from 'react';
 import { ActivityIndicator, Alert, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { ArchivedToast } from '../components/ArchivedToast';
 import { Avatar } from '../components/Avatar';
 import { FadeIn } from '../components/FadeIn';
 import { SignIn } from '../components/SignIn';
@@ -101,16 +102,12 @@ export default function Inbox() {
           />
         }
       />
-      {store.lastArchived ? (
-        <View style={[s.toastWrap, { bottom: insets.bottom + 20 }]} pointerEvents="box-none">
-          <View style={s.toast}>
-            <Text style={s.toastText}>Archived</Text>
-            <Pressable onPress={store.undoArchive} hitSlop={12}>
-              <Text style={s.toastAction}>Undo</Text>
-            </Pressable>
-          </View>
-        </View>
-      ) : null}
+      <ArchivedToast
+        archivedId={store.lastArchived?.id ?? null}
+        onUndo={store.undoArchive}
+        theme={theme}
+        bottom={insets.bottom + 20}
+      />
     </FadeIn>
   );
 }
@@ -190,18 +187,5 @@ function create(t: Theme) {
     empty: { alignItems: 'center', marginTop: 96, paddingHorizontal: 40 },
     emptyTitle: { fontWeight: weight.bold, fontSize: 18, color: t.text },
     emptyBody: { fontWeight: weight.regular, fontSize: 14, color: t.muted, marginTop: 6 },
-    toastWrap: { position: 'absolute', left: 0, right: 0, alignItems: 'center' },
-    toast: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 22,
-      backgroundColor: t.text,
-      paddingVertical: 12,
-      paddingHorizontal: 20,
-      borderRadius: 999,
-      elevation: 6,
-    },
-    toastText: { fontWeight: weight.regular, fontSize: 14, color: t.bg },
-    toastAction: { fontWeight: weight.bold, fontSize: 14, color: t.bg, textDecorationLine: 'underline' },
   });
 }

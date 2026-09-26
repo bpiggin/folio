@@ -14,7 +14,10 @@ export type ReaderPayload = {
   };
 };
 
-export type ReaderMessage = { type: 'archive' } | { type: 'ready'; mode: 'reader' | 'original' };
+export type ReaderMessage =
+  | { type: 'archiving' } // button tapped; the celebration is playing
+  | { type: 'archive' } // celebration done; archive and leave
+  | { type: 'ready'; mode: 'reader' | 'original' };
 
 /** JSON that is safe to drop inside a <script> element. */
 function scriptJson(value: unknown): string {
@@ -82,20 +85,89 @@ h1.subject { font-weight: 700; font-size: 28px; line-height: 1.2; letter-spacing
 /* End of message */
 .end { margin-top: 56px; display: flex; flex-direction: column; align-items: center; gap: 24px; }
 .dots { color: var(--faint); letter-spacing: .6em; font-size: 12px; }
-.archive {
-  appearance: none; border: 0; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 10px;
-  background: none; color: var(--text); font: inherit; padding: 8px 24px;
-}
+.archive { appearance: none; border: 0; background: none; padding: 8px; cursor: pointer; }
 .archive .disc {
-  width: 64px; height: 64px; border-radius: 50%; background: var(--text); color: var(--bg);
+  position: relative; width: 64px; height: 64px; border-radius: 50%; background: var(--text); color: var(--bg);
   display: grid; place-items: center; transition: transform .12s ease;
 }
+.archive .disc > span { grid-area: 1 / 1; display: grid; place-items: center; transition: opacity .2s ease, transform .34s cubic-bezier(.3, 1.5, .5, 1); }
 .archive .disc svg { width: 30px; height: 30px; }
+.archive .icon-check { opacity: 0; transform: scale(.4) rotate(-25deg); }
 .archive:active .disc { transform: scale(.92); }
-.archive .label { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+
+/* Archived: the disc pops, the box gives way to a check, and a soft ring ripples out. */
+.archive.done .disc { animation: pop .46s cubic-bezier(.3, 1.4, .5, 1); }
+.archive.done .icon-archive { opacity: 0; transform: scale(.6) translateY(-5px); }
+.archive.done .icon-check { opacity: 1; transform: none; transition-delay: .08s; }
+.archive .disc::after { content: ''; position: absolute; inset: 0; border-radius: 50%; border: 1.5px solid var(--text); opacity: 0; pointer-events: none; }
+.archive.done .disc::after { animation: ring .75s cubic-bezier(.2, .6, .3, 1); }
+@keyframes pop { 0% { transform: scale(.88); } 45% { transform: scale(1.08); } 100% { transform: scale(1); } }
+@keyframes ring { 0% { opacity: .45; transform: scale(1); } 100% { opacity: 0; transform: scale(2); } }
+
+/* Sparkles drifting up from the bottom of the screen. */
+.sparkles { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 10; }
+.spark {
+  position: absolute; bottom: -16px; color: var(--text); opacity: 0;
+  animation: rise var(--dur) cubic-bezier(.15, .6, .35, 1) var(--delay) forwards;
+}
+.spark svg { display: block; width: 100%; height: 100%; }
+.spark.dot { border-radius: 50%; background: var(--text); }
+@keyframes rise {
+  0% { opacity: 0; transform: translate(0, 0) scale(.3) rotate(0deg); }
+  18% { opacity: var(--o); }
+  60% { opacity: calc(var(--o) * .8); }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(1) rotate(var(--r)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .archive.done .disc, .archive.done .disc::after { animation: none; }
+}
 [hidden] { display: none !important; }
 `;
 }
+
+// The archive button's little celebration: pop + check, sparkles rising from the
+// bottom of the screen, then the app is told to archive and go back.
+const ARCHIVE_JS = String.raw`
+(function () {
+  var button = document.getElementById('archive');
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var SPARKLE = __SPARKLE__;
+  function post(msg) { window.ReactNativeWebView && window.ReactNativeWebView.postMessage(JSON.stringify(msg)); }
+
+  function sparkle() {
+    var layer = document.createElement('div');
+    layer.className = 'sparkles';
+    var w = window.innerWidth, h = window.innerHeight;
+    for (var i = 0; i < 18; i++) {
+      var star = i % 3 !== 2; // two stars for every dot
+      var el = document.createElement('span');
+      el.className = star ? 'spark' : 'spark dot';
+      if (star) el.innerHTML = SPARKLE;
+      var size = star ? 7 + Math.random() * 9 : 3 + Math.random() * 3;
+      el.style.cssText =
+        'left:' + (w * (0.06 + Math.random() * 0.88)).toFixed(0) + 'px;' +
+        'width:' + size.toFixed(1) + 'px;height:' + size.toFixed(1) + 'px;' +
+        '--dx:' + ((Math.random() - 0.5) * 70).toFixed(0) + 'px;' +
+        '--dy:' + (-(0.28 + Math.random() * 0.45) * h).toFixed(0) + 'px;' +
+        '--r:' + ((Math.random() - 0.5) * 200).toFixed(0) + 'deg;' +
+        '--o:' + (0.35 + Math.random() * 0.55).toFixed(2) + ';' +
+        '--dur:' + (850 + Math.random() * 500).toFixed(0) + 'ms;' +
+        '--delay:' + (Math.random() * 240).toFixed(0) + 'ms';
+      layer.appendChild(el);
+    }
+    document.body.appendChild(layer);
+  }
+
+  button.addEventListener('click', function () {
+    if (button.classList.contains('done')) return;
+    button.classList.add('done');
+    button.setAttribute('aria-label', 'Archived');
+    post({ type: 'archiving' });
+    if (!reduceMotion) sparkle();
+    setTimeout(function () { post({ type: 'archive' }); }, reduceMotion ? 250 : 700);
+  });
+})();
+`;
 
 // Runs inside the WebView. Kept as plain ES2017 so it works on any Android System WebView.
 const RENDER_JS = String.raw`
@@ -302,18 +374,15 @@ export function buildReaderHtml(
   <section id="original" hidden></section>
   <footer class="end">
     <div class="dots">• • •</div>
-    <button class="archive" id="archive" type="button">
-      <span class="disc">${ICONS.archive}</span>
-      <span class="label">Archive</span>
+    <button class="archive" id="archive" type="button" aria-label="Archive">
+      <span class="disc"><span class="icon-archive">${ICONS.archive}</span><span class="icon-check">${ICONS.check}</span></span>
     </button>
   </footer>
 </main>
 <script>window.__PAYLOAD = ${scriptJson(payload)};</script>
 <script>${READABILITY_JS.replace(/<\/script/gi, '<\\/script')}</script>
 <script>
-document.getElementById('archive').addEventListener('click', function () {
-  window.ReactNativeWebView && window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'archive' }));
-});
+${ARCHIVE_JS.replace('__SPARKLE__', JSON.stringify(ICONS.sparkle))}
 ${RENDER_JS}
 </script>
 </body>

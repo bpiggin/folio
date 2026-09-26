@@ -71,6 +71,8 @@ export default function Reader() {
     }
     if (msg.type === 'ready') {
       Animated.timing(opacity, { toValue: 1, duration: FADE_MS, useNativeDriver: true }).start();
+    } else if (msg.type === 'archiving') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     } else if (msg.type === 'archive') {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       store.archive(id);

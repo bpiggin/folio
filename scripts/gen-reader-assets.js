@@ -6,7 +6,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const ICONS = { archive: 'light/archive-light.svg' };
+const ICONS = { archive: 'light/archive-light.svg', check: 'light/check-light.svg', sparkle: 'fill/star-four-fill.svg' };
 
 function main() {
   const readability = fs.readFileSync(require.resolve('@mozilla/readability/Readability.js'), 'utf8');
