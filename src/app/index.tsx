@@ -5,9 +5,11 @@ import { memo, useCallback, useEffect } from 'react';
 import { ActivityIndicator, Alert, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { ArchivedToast } from '../components/ArchivedToast';
 import { Avatar } from '../components/Avatar';
 import { FadeIn } from '../components/FadeIn';
 import { SignIn } from '../components/SignIn';
+import { SwipeToArchive } from '../components/SwipeToArchive';
 import { shortDate } from '../lib/format';
 import type { MessageSummary } from '../lib/gmail';
 import { useStore } from '../lib/store';
@@ -20,9 +22,10 @@ export default function Inbox() {
   const s = styles(theme);
 
   const open = useCallback((id: string) => router.push({ pathname: '/message/[id]', params: { id } }), []);
+  const { archive } = store;
   const renderItem = useCallback(
-    ({ item }: { item: MessageSummary }) => <Row message={item} theme={theme} onPress={open} />,
-    [theme, open]
+    ({ item }: { item: MessageSummary }) => <Row message={item} theme={theme} onPress={open} onArchive={archive} />,
+    [theme, open, archive]
   );
 
   useEffect(() => {
@@ -99,16 +102,12 @@ export default function Inbox() {
           />
         }
       />
-      {store.lastArchived ? (
-        <View style={[s.toastWrap, { bottom: insets.bottom + 20 }]} pointerEvents="box-none">
-          <View style={s.toast}>
-            <Text style={s.toastText}>Archived</Text>
-            <Pressable onPress={store.undoArchive} hitSlop={12}>
-              <Text style={s.toastAction}>Undo</Text>
-            </Pressable>
-          </View>
-        </View>
-      ) : null}
+      <ArchivedToast
+        archivedId={store.lastArchived?.id ?? null}
+        onUndo={store.undoArchive}
+        theme={theme}
+        bottom={insets.bottom + 20}
+      />
     </FadeIn>
   );
 }
@@ -117,34 +116,38 @@ const Row = memo(function Row({
   message,
   theme,
   onPress,
+  onArchive,
 }: {
   message: MessageSummary;
   theme: Theme;
   onPress: (id: string) => void;
+  onArchive: (id: string) => void;
 }) {
   const s = styles(theme);
   return (
-    <Pressable
-      onPress={() => onPress(message.id)}
-      android_ripple={{ color: theme.hairline }}
-      style={({ pressed }) => [s.row, pressed && { backgroundColor: theme.surface }]}
-    >
-      <View style={s.rowTop}>
-        <Avatar name={message.from} email={message.fromEmail} theme={theme} />
-        <Text style={s.sender} numberOfLines={1}>
-          {message.from}
+    <SwipeToArchive theme={theme} onArchive={() => onArchive(message.id)}>
+      <Pressable
+        onPress={() => onPress(message.id)}
+        android_ripple={{ color: theme.hairline }}
+        style={({ pressed }) => [s.row, pressed && { backgroundColor: theme.surface }]}
+      >
+        <View style={s.rowTop}>
+          <Avatar name={message.from} email={message.fromEmail} theme={theme} />
+          <Text style={s.sender} numberOfLines={1}>
+            {message.from}
+          </Text>
+          <Text style={s.date}>{shortDate(message.date)}</Text>
+        </View>
+        <Text style={s.subject} numberOfLines={2}>
+          {message.subject}
         </Text>
-        <Text style={s.date}>{shortDate(message.date)}</Text>
-      </View>
-      <Text style={s.subject} numberOfLines={2}>
-        {message.subject}
-      </Text>
-      {message.snippet ? (
-        <Text style={s.snippet} numberOfLines={2}>
-          {message.snippet}
-        </Text>
-      ) : null}
-    </Pressable>
+        {message.snippet ? (
+          <Text style={s.snippet} numberOfLines={2}>
+            {message.snippet}
+          </Text>
+        ) : null}
+      </Pressable>
+    </SwipeToArchive>
   );
 });
 
@@ -184,18 +187,5 @@ function create(t: Theme) {
     empty: { alignItems: 'center', marginTop: 96, paddingHorizontal: 40 },
     emptyTitle: { fontWeight: weight.bold, fontSize: 18, color: t.text },
     emptyBody: { fontWeight: weight.regular, fontSize: 14, color: t.muted, marginTop: 6 },
-    toastWrap: { position: 'absolute', left: 0, right: 0, alignItems: 'center' },
-    toast: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 22,
-      backgroundColor: t.text,
-      paddingVertical: 12,
-      paddingHorizontal: 20,
-      borderRadius: 999,
-      elevation: 6,
-    },
-    toastText: { fontWeight: weight.regular, fontSize: 14, color: t.bg },
-    toastAction: { fontWeight: weight.bold, fontSize: 14, color: t.bg, textDecorationLine: 'underline' },
   });
 }

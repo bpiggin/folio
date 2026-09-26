@@ -17,9 +17,9 @@ No toolbars, no clipped messages, no inbox clutter: just the words.
 
 <br>
 
-<img src="docs/reader-light.png" width="250" alt="An essay open in Folio's reader, light mode">&nbsp;&nbsp;
-<img src="docs/archive-dark.png" width="250" alt="The end of an essay in dark mode, with the archive button">&nbsp;&nbsp;
-<img src="docs/original-dark.png" width="250" alt="A designed newsletter shown in its original layout, recoloured for dark mode">
+<img src="docs/inbox.png" width="250" alt="The Folio inbox: newsletters newest first, each with a small sender icon">&nbsp;&nbsp;
+<img src="docs/reader.png" width="250" alt="An Astral Codex Ten post open in Folio's full-screen reader">&nbsp;&nbsp;
+<img src="docs/archive.png" width="250" alt="The end of a post, with the archive button">
 
 </div>
 
@@ -34,7 +34,7 @@ Folio does three things.
 
 1. **Shows your inbox**, newest first. It doesn't track read or unread.
 2. **Opens messages full screen**, with nothing but the text.
-3. **Archives** a message from the end of it and takes you back to the inbox.
+3. **Archives** a message from the end of it, or with a swipe in the inbox.
 
 ## Features
 
@@ -51,8 +51,9 @@ Folio does three things.
 - **Instant.** The inbox and every message in it are cached on your phone and
   downloaded in the background, so opening an email doesn't show a spinner.
 - **Reading time.** Each message shows an estimate at the top.
-- **Archive at the end.** Scroll to the bottom and tap the archive button. An
-  *Undo* option appears briefly afterwards.
+- **Archive at the end, or with a swipe.** Scroll to the bottom and tap the archive
+  button, or swipe a message left or right in the inbox. An *Undo* option appears
+  briefly afterwards.
 - **Small, monochrome and calm.** Screens fade in and out quickly. Each sender gets a
   small inline icon, and the whole app is black and white.
 
