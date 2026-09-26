@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Avatar } from '../components/Avatar';
 import { FadeIn } from '../components/FadeIn';
 import { SignIn } from '../components/SignIn';
+import { SwipeToArchive } from '../components/SwipeToArchive';
 import { shortDate } from '../lib/format';
 import type { MessageSummary } from '../lib/gmail';
 import { useStore } from '../lib/store';
@@ -20,9 +21,10 @@ export default function Inbox() {
   const s = styles(theme);
 
   const open = useCallback((id: string) => router.push({ pathname: '/message/[id]', params: { id } }), []);
+  const { archive } = store;
   const renderItem = useCallback(
-    ({ item }: { item: MessageSummary }) => <Row message={item} theme={theme} onPress={open} />,
-    [theme, open]
+    ({ item }: { item: MessageSummary }) => <Row message={item} theme={theme} onPress={open} onArchive={archive} />,
+    [theme, open, archive]
   );
 
   useEffect(() => {
@@ -117,34 +119,38 @@ const Row = memo(function Row({
   message,
   theme,
   onPress,
+  onArchive,
 }: {
   message: MessageSummary;
   theme: Theme;
   onPress: (id: string) => void;
+  onArchive: (id: string) => void;
 }) {
   const s = styles(theme);
   return (
-    <Pressable
-      onPress={() => onPress(message.id)}
-      android_ripple={{ color: theme.hairline }}
-      style={({ pressed }) => [s.row, pressed && { backgroundColor: theme.surface }]}
-    >
-      <View style={s.rowTop}>
-        <Avatar name={message.from} email={message.fromEmail} theme={theme} />
-        <Text style={s.sender} numberOfLines={1}>
-          {message.from}
+    <SwipeToArchive theme={theme} onArchive={() => onArchive(message.id)}>
+      <Pressable
+        onPress={() => onPress(message.id)}
+        android_ripple={{ color: theme.hairline }}
+        style={({ pressed }) => [s.row, pressed && { backgroundColor: theme.surface }]}
+      >
+        <View style={s.rowTop}>
+          <Avatar name={message.from} email={message.fromEmail} theme={theme} />
+          <Text style={s.sender} numberOfLines={1}>
+            {message.from}
+          </Text>
+          <Text style={s.date}>{shortDate(message.date)}</Text>
+        </View>
+        <Text style={s.subject} numberOfLines={2}>
+          {message.subject}
         </Text>
-        <Text style={s.date}>{shortDate(message.date)}</Text>
-      </View>
-      <Text style={s.subject} numberOfLines={2}>
-        {message.subject}
-      </Text>
-      {message.snippet ? (
-        <Text style={s.snippet} numberOfLines={2}>
-          {message.snippet}
-        </Text>
-      ) : null}
-    </Pressable>
+        {message.snippet ? (
+          <Text style={s.snippet} numberOfLines={2}>
+            {message.snippet}
+          </Text>
+        ) : null}
+      </Pressable>
+    </SwipeToArchive>
   );
 });
 
