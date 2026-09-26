@@ -67,7 +67,7 @@ servers, so you don't need Android Studio.
 
 To install:
 
-1. On your phone, open `https://github.com/<you>/mail-reader/releases/latest`.
+1. On your phone, open `https://github.com/bpiggin/folio/releases/latest`.
 2. Tap **folio.apk** to download it, then open it. Android will ask you to allow
    installs from your browser the first time.
 3. Open Folio and tap **Connect Gmail**.
